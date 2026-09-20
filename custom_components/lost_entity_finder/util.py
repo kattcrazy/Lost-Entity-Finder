@@ -28,6 +28,11 @@ def slugify_issue_id(old_entity_id: str) -> str:
     return "lost_" + old_entity_id.replace(".", "_").replace("-", "_")
 
 
+def slugify_find_issue_id(entity_id: str) -> str:
+    """Build a stable issue ID for a find-references repair."""
+    return "find_" + entity_id.replace(".", "_").replace("-", "_")
+
+
 def is_template_string(value: str) -> bool:
     """Return True if value looks like a Jinja template."""
     return any(marker in value for marker in TEMPLATE_MARKERS)

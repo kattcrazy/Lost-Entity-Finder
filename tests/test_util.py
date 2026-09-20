@@ -17,6 +17,7 @@ from lost_entity_finder.util import (
     extract_entities_from_value,
     format_references_for_repair,
     merge_reference_hits,
+    slugify_find_issue_id,
     slugify_issue_id,
 )
 
@@ -27,6 +28,13 @@ class EntityFinderUtilTests(unittest.TestCase):
     def test_slugify_issue_id(self) -> None:
         """Issue IDs should be stable and safe."""
         self.assertEqual(slugify_issue_id("sensor.door"), "lost_sensor_door")
+
+    def test_slugify_find_issue_id(self) -> None:
+        """Find-reference issue IDs should use a distinct prefix."""
+        self.assertEqual(
+            slugify_find_issue_id("input_datetime.s_wake_up_time"),
+            "find_input_datetime_s_wake_up_time",
+        )
 
     def test_merge_reference_hits_deduplicates(self) -> None:
         """Merged hits should deduplicate by resource."""

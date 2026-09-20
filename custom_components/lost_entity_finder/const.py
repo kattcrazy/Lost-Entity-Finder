@@ -18,6 +18,8 @@ MAX_IGNORED = 50
 DEBOUNCE_COOLDOWN = 3
 
 TRANSLATION_KEY_LOST = "lost_entity_references"
+TRANSLATION_KEY_FOUND = "found_entity_references"
+ISSUE_KIND_FIND = "find"
 
 RESCAN_COMPONENT_DOMAINS = frozenset(
     {"automation", "script", "scene", "lovelace", "group"}

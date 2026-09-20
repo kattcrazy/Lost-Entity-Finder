@@ -13,12 +13,12 @@ from homeassistant.helpers import config_validation as cv
 
 from . import repairs  # noqa: F401
 from .config_flow import get_max_pending_changes
-from .const import DOMAIN
+from .const import DOMAIN, ISSUE_KIND_FIND, TRANSLATION_KEY_FOUND
 from .entity_platform import EntityFinderEntityPlatform
 from .entry_helpers import get_loaded_manager
 from .manager import EntityFinderManager
 from .scanner import async_scan_tracked_references
-from .util import format_references_for_repair
+from .util import format_references_for_repair, slugify_find_issue_id
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +98,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def _async_handle_find_references_service(
     hass: HomeAssistant, call: ServiceCall
 ) -> None:
-    """Scan and show all locations that reference an entity ID."""
+    """Scan and raise a repair listing locations that reference an entity ID."""
+    from homeassistant.helpers import issue_registry as ir
+
     entity_id = str(call.data["entity_id"]).lower()
     hits_by_entity = await async_scan_tracked_references(hass, {entity_id})
     hits = hits_by_entity.get(entity_id, [])
@@ -108,17 +110,25 @@ async def _async_handle_find_references_service(
         )
 
     references_md, manual_note = format_references_for_repair(hits)
-    message = f"Found {len(hits)} reference(s) for `{entity_id}`:\n\n{references_md}"
-    if manual_note:
-        message += f"\n\n{manual_note}"
-
-    from homeassistant.components.persistent_notification import async_create
-
-    async_create(
+    issue_id = slugify_find_issue_id(entity_id)
+    ir.async_create_issue(
         hass,
-        message,
-        title=f"{DOMAIN}: {entity_id}",
-        notification_id=f"{DOMAIN}_find_refs_{entity_id}",
+        DOMAIN,
+        issue_id,
+        is_fixable=True,
+        is_persistent=False,
+        severity=ir.IssueSeverity.WARNING,
+        translation_key=TRANSLATION_KEY_FOUND,
+        data={
+            "kind": ISSUE_KIND_FIND,
+            "entity_id": entity_id,
+            "old_entity_id": entity_id,
+        },
+        translation_placeholders={
+            "entity_id": entity_id,
+            "references": references_md,
+            "manual_note": f"{manual_note}\n\n" if manual_note else "",
+        },
     )
 
 

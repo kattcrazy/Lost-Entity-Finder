@@ -1,6 +1,6 @@
 find_entity_references:
   name: Find Entity References
-  description: Scan supported configs and show where an entity ID is referenced.
+  description: Scan supported configs and raise a repair listing where an entity ID is referenced.
   fields:
     entity_id:
       name: Entity ID

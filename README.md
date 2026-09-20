@@ -1,4 +1,4 @@
-# <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" /> Lost Entity Finder <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" />
+﻿# <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" /> Lost Entity Finder <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" />
 
 Detect lost entity references after entity ID changes in Home Assistant. When you change an entity ID (for example `sensor.door` -> `sensor.window`), Lost Entity Finder finds automations, scripts, scenes, dashboards, groups, helpers, YAML configuration, and third-party `.storage` files that still use the old ID and raises one repair per changed entity ID with direct links to each location, along with options to ignore or auto-replace in bulk.
 
@@ -14,19 +14,19 @@ Detect lost entity references after entity ID changes in Home Assistant. When yo
 1. Add `https://github.com/kattcrazy/Lost-Entity-Finder` as a custom repository in HACS (category: Integration)
 2. Search for Lost Entity Finder & click Download
 3. Restart Home Assistant
-4. Add the integration under Settings → Devices & services
+4. Add the integration under Settings â†’ Devices & services
 
 ### Manual
 
 1. Copy the `custom_components/lost_entity_finder` folder into your Home Assistant `custom_components` directory
 2. Restart Home Assistant
-3. Add the integration under Settings → Devices & services
+3. Add the integration under Settings â†’ Devices & services
 
 ## Configuration & Features
 
 ### Auto-Replace
 
-On setup you can enable Auto-Replace (bulk fix). Default is off. Change this anytime via Settings → Devices & services → Lost Entity Finder → Configure.
+On setup you can enable Auto-Replace (bulk fix). Default is off. Change this anytime via Settings â†’ Devices & services â†’ Lost Entity Finder â†’ Configure.
 
 You can also set the maximum number of tracked entity ID changes (default 1000). Raise this if you bulk-rename many entities at once.
 
@@ -45,13 +45,13 @@ Lost Entity Finder adds the following entities:
 
 ### Repairs
 
-After an entity ID change, open Settings → System → Repairs. Each lost entity ID will have a repair listing all locations that still reference it.
+After an entity ID change, open Settings â†’ System â†’ Repairs. Each lost entity ID will have a repair listing all locations that still reference it.
 
 When Auto-Replace is enabled, Auto-Replace is the default action. If some references can be updated automatically and others cannot, the repair runs Auto-Replace first, then shows the remaining manual locations with Fix later (default), Mark as completed, or Ignore. Manual-only repairs offer the same choices. Fix later closes the dialog and leaves the repair in the list until you finish the manual updates or pick another option.
 
 ### Services
 
-Use `lost_entity_finder.find_entity_references` to scan for a specific entity ID on demand. Will create a persistent notification with links to all instances of the entity id. This will not give options to auto replace.
+Use `lost_entity_finder.find_entity_references` to scan for a specific entity ID on demand. Raises a repair under Settings â†’ System â†’ Repairs with links to each location. This does not offer Auto-Replace (no old-to-new pair).
 
 Example
 

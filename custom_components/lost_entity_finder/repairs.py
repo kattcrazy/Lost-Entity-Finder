@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import issue_registry as ir
 
 from .config_flow import get_enable_bulk_fix
-from .const import DOMAIN
+from .const import DOMAIN, ISSUE_KIND_FIND
 from .entry_helpers import get_loaded_manager, iter_loaded_entries
 from .manager import EntityFinderManager
 from .models import ReferenceHit
@@ -45,7 +45,11 @@ class LostEntityReferencesRepairFlow(RepairsFlow):
         self._hass = hass
         self._issue_id = issue_id
         self._data = data
-        self._old_entity_id = str(data.get("old_entity_id", ""))
+        self._kind = str(data.get("kind", "lost"))
+        self._entity_id = str(
+            data.get("entity_id") or data.get("old_entity_id") or ""
+        )
+        self._old_entity_id = str(data.get("old_entity_id") or self._entity_id)
         self._new_entity_id = str(data.get("new_entity_id", ""))
         self._preview = ""
         self._result_summary = ""
@@ -120,10 +124,32 @@ class LostEntityReferencesRepairFlow(RepairsFlow):
         self, user_input: dict[str, str] | None = None
     ) -> data_entry_flow.FlowResult:
         """Choose Ignore or Auto-Replace."""
+        if self._kind == ISSUE_KIND_FIND:
+            return await self.async_step_find_references(user_input)
         self._hits = await self._async_get_hits()
         if not self._can_offer_auto_replace(self._hits):
             return await self.async_step_manual_only(user_input)
         return await self.async_step_choose_action(user_input)
+
+    async def async_step_find_references(
+        self, user_input: dict[str, str] | None = None
+    ) -> data_entry_flow.FlowResult:
+        """Show on-demand find results and allow dismiss."""
+        if user_input is not None:
+            ir.async_delete_issue(self._hass, DOMAIN, self._issue_id)
+            return self.async_create_entry(title="", data={})
+
+        self._hits = await self._async_get_hits()
+        references, manual_note = format_references_for_repair(self._hits)
+        return self.async_show_form(
+            step_id="find_references",
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "entity_id": self._entity_id or self._old_entity_id,
+                "references": references,
+                "manual_note": f"{manual_note}\n\n" if manual_note else "",
+            },
+        )
 
     async def async_step_choose_action(
         self, user_input: dict[str, str] | None = None
