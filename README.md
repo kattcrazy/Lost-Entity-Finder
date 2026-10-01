@@ -1,3 +1,7 @@
+<!-- project-directory-status -->
+[![Maintained (low priority)](https://img.shields.io/endpoint?style=for-the-badge&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkattcrazy%2Fkattcrazy%2Fmain%2Fbadges%2FEntity-Finder.json)](https://github.com/kattcrazy/kattcrazy/blob/main/PROJECT-DIRECTORY.md) [![Up for adoption - credit required](https://img.shields.io/endpoint?style=for-the-badge&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkattcrazy%2Fkattcrazy%2Fmain%2Fbadges%2FEntity-Finder-section.json)](https://github.com/kattcrazy/kattcrazy/blob/main/PROJECT-DIRECTORY.md)
+<!-- /project-directory-status -->
+
 ﻿# <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" /> Lost Entity Finder <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" />
 
 Detect lost entity references after entity ID changes in Home Assistant. When you change an entity ID (for example `sensor.door` -> `sensor.window`), Lost Entity Finder finds automations, scripts, scenes, dashboards, groups, helpers, YAML configuration, and third-party `.storage` files that still use the old ID and raises one repair per changed entity ID with direct links to each location, along with options to ignore or auto-replace in bulk.
