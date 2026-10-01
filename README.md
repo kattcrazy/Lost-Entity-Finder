@@ -1,7 +1,9 @@
 <!-- project-directory-status -->
-<p align="center">
+<div align="center">
+
 [![Maintained (low priority)](https://img.shields.io/endpoint?style=for-the-badge&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkattcrazy%2Fkattcrazy%2Fmain%2Fbadges%2FLost-Entity-Finder.json)](https://github.com/kattcrazy/kattcrazy/blob/main/PROJECT-DIRECTORY.md) [![Up for adoption - credit required](https://img.shields.io/endpoint?style=for-the-badge&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkattcrazy%2Fkattcrazy%2Fmain%2Fbadges%2FLost-Entity-Finder-section.json)](https://github.com/kattcrazy/kattcrazy/blob/main/PROJECT-DIRECTORY.md)
-</p>
+
+</div>
 <!-- /project-directory-status -->
 
 ﻿# <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" /> Lost Entity Finder <img src="custom_components/lost_entity_finder/brand/icon.png" alt="Lost Entity Finder icon" width="36" />
