@@ -24,13 +24,13 @@ Detect lost entity references after entity ID changes in Home Assistant. When yo
 1. Add `https://github.com/kattcrazy/Lost-Entity-Finder` as a custom repository in HACS (category: Integration)
 2. Search for Lost Entity Finder & click Download
 3. Restart Home Assistant
-4. Add the integration under Settings â†’ Devices & services
+4. Add the integration under Settings -> Devices & services
 
 ### Manual
 
 1. Copy the `custom_components/lost_entity_finder` folder into your Home Assistant `custom_components` directory
 2. Restart Home Assistant
-3. Add the integration under Settings â†’ Devices & services
+3. Add the integration under Settings -> Devices & services
 
 ## Configuration & Features
 
@@ -90,7 +90,5 @@ This project uses the [GNU General Public License v3.0](https://www.gnu.org/lice
 
 ## About
 Hope this helps! Built to solve my own problem ;)
-
-Contributions/PRs welcome. 
 
 If this helps you out a heap as I'm sure it will, consider supporting me [here](https://kattcrazy.nz/product/support-me/) :)
