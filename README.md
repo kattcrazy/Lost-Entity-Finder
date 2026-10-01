@@ -10,6 +10,8 @@
 
 Detect lost entity references after entity ID changes in Home Assistant. When you change an entity ID (for example `sensor.door` -> `sensor.window`), Lost Entity Finder finds automations, scripts, scenes, dashboards, groups, helpers, YAML configuration, and third-party `.storage` files that still use the old ID and raises one repair per changed entity ID with direct links to each location, along with options to ignore or auto-replace in bulk.
 
+> Use with caution! This integration is basically a giant find-and-replace (if enabled) and can make mistakes. Please back up your Home Assistant instance before using for many entities.
+
 <img width="402"  alt="image" src="https://github.com/user-attachments/assets/98351145-6ec8-46fd-9057-d2b98d69a7f9" />
 <img width="382" alt="image" src="https://github.com/user-attachments/assets/eb268543-cb18-464d-80ce-4c96b8d5f6b8" />
 
@@ -17,7 +19,7 @@ Detect lost entity references after entity ID changes in Home Assistant. When yo
 
 ## Installation
 
-### HACS Custom Repo (recommended)
+### HACS custom Repo (recommended)
 
 1. Add `https://github.com/kattcrazy/Lost-Entity-Finder` as a custom repository in HACS (category: Integration)
 2. Search for Lost Entity Finder & click Download
