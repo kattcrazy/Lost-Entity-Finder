@@ -72,7 +72,7 @@
   },
   "exceptions": {
     "no_references_found": {
-      "message": "No references found for '{entity_id}' in supported locations."
+      "message": "No references found for {entity_id} in supported locations."
     },
     "renames_required": {
       "message": "Renames must be a non-empty old-to-new entity ID map."
