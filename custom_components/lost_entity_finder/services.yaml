@@ -1,6 +1,6 @@
 find_entity_references:
   name: Find Entity References
-  description: Scan supported configs and raise a repair listing where an entity ID is referenced.
+  description: Scan supported locations and raise a repair where an entity ID is referenced.
   fields:
     entity_id:
       name: Entity ID
@@ -12,7 +12,7 @@ find_entity_references:
 
 check_entity_id_pair:
   name: Check Entity ID Pair
-  description: Check one or more old-to-new entity ID pairs and sync repairs.
+  description: Check one or more old-to-new entity ID pairs and make repairs for them.
   fields:
     renames:
       name: Renames

@@ -53,7 +53,7 @@ class EntityFinderButton(ButtonEntity):
 class RescanLostEntitiesButton(EntityFinderButton):
     """Button to rescan for lost entity references."""
 
-    _attr_name = "Rescan for Lost Entity Repairs"
+    _attr_translation_key = "rescan"
     _attr_icon = "mdi:refresh"
 
     def __init__(self, manager: EntityFinderManager, entry: ConfigEntry) -> None:
@@ -69,7 +69,7 @@ class RescanLostEntitiesButton(EntityFinderButton):
 class IgnoreAllButton(EntityFinderButton):
     """Button to ignore all active lost entity repairs."""
 
-    _attr_name = "Ignore All Lost Entity Repairs"
+    _attr_translation_key = "ignore_all"
     _attr_icon = "mdi:eye-off-outline"
 
     def __init__(self, manager: EntityFinderManager, entry: ConfigEntry) -> None:
@@ -85,7 +85,7 @@ class IgnoreAllButton(EntityFinderButton):
 class RestoreIgnoredButton(EntityFinderButton):
     """Button to restore all ignored lost entity repairs."""
 
-    _attr_name = "Restore Ignored Lost Entity Repairs"
+    _attr_translation_key = "restore_ignored"
     _attr_icon = "mdi:restore"
 
     def __init__(self, manager: EntityFinderManager, entry: ConfigEntry) -> None:
@@ -99,9 +99,9 @@ class RestoreIgnoredButton(EntityFinderButton):
 
 
 class AutoReplaceAllButton(EntityFinderButton):
-    """Button to auto-replace all lost entity references."""
+    """Button to Auto-Replace all lost entity references."""
 
-    _attr_name = "Auto Replace All Lost Entity Repairs"
+    _attr_translation_key = "auto_replace_all"
     _attr_icon = "mdi:swap-horizontal"
 
     def __init__(self, manager: EntityFinderManager, entry: ConfigEntry) -> None:

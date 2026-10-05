@@ -1,0 +1,19 @@
+{
+  "action_auto_replace": "Auto-Replace",
+  "action_ignore": "Ignore",
+  "action_fix_later": "Fix later",
+  "action_mark_completed": "Mark as completed",
+  "manual_update_suffix": " _(manual update required)_",
+  "manual_count_note": "_{count} reference(s) cannot be auto-replaced and must be updated manually._",
+  "bulk_fix_disabled_hint": "_(Auto-Replace is disabled in integration settings.)_",
+  "no_references_keep": "_No references found in supported locations._",
+  "manual_reason_yaml": "YAML config",
+  "manual_reason_edit": "manual edit",
+  "preview_will_update": "Will be updated:",
+  "preview_manual_required": "Manual update required:",
+  "preview_none": "No changes will be applied.",
+  "summary_updated": "Updated:",
+  "summary_skipped": "Skipped:",
+  "summary_failed": "Failed:",
+  "summary_none": "No changes were applied."
+}

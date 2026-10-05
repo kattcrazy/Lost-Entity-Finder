@@ -59,9 +59,14 @@ class EntityFinderEntityPlatform:
 
     async def async_refresh_auto_replace(self) -> None:
         """Add or remove the Auto-Replace All button based on settings."""
-        if get_enable_bulk_fix(self.hass, self.entry):
+        if get_enable_bulk_fix(self.hass, self.entry) or (
+            self.manager is not None and self.manager.is_auto_replace_all_running
+        ):
             self._async_add_auto_replace()
             return
         if self._auto_replace_button is not None:
-            await self._auto_replace_button.async_remove()
+            button = self._auto_replace_button
             self._auto_replace_button = None
+            remove = getattr(button, "async_remove", None)
+            if callable(remove):
+                await remove()

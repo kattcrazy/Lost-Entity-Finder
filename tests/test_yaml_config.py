@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bootstrap  # noqa: F401
 
 from lost_entity_finder.scanners import yaml_config  # noqa: E402
+from lost_entity_finder.scanners.yaml_config import LoadedCoreConfig  # noqa: E402
 from lost_entity_finder.util import manual_reference_reason  # noqa: E402
 from lost_entity_finder.models import ReferenceHit  # noqa: E402
 
@@ -146,8 +147,8 @@ class YamlConfigTreeTests(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(
             yaml_config,
-            "_async_load_merged_configuration",
-            AsyncMock(return_value=merged_config),
+            "async_load_core_config",
+            AsyncMock(return_value=LoadedCoreConfig(merged_config, True)),
         ):
             hits = await yaml_config.async_scan(self.hass, {"light.spare_bulb_4"})
 
@@ -177,8 +178,8 @@ class YamlConfigTreeTests(unittest.IsolatedAsyncioTestCase):
 
         with patch.object(
             yaml_config,
-            "_async_load_merged_configuration",
-            AsyncMock(return_value=merged_config),
+            "async_load_core_config",
+            AsyncMock(return_value=LoadedCoreConfig(merged_config, True)),
         ):
             hits = await yaml_config.async_scan(self.hass, {"sensor.old_light"})
 
@@ -190,6 +191,143 @@ class YamlConfigTreeTests(unittest.IsolatedAsyncioTestCase):
             "configuration.yaml (template)",
         )
         self.assertFalse(hits["sensor.old_light"][0].auto_replaceable)
+
+    async def test_scan_includes_packages_and_themes_but_not_ui_files(self) -> None:
+        """Merged packages and themes count. automations.yaml content does not."""
+        merged_config = {
+            "automation": [
+                {
+                    "id": "ui_only",
+                    "trigger": {"platform": "state", "entity_id": "sensor.from_automations_yaml"},
+                }
+            ],
+            "binary_sensor": [
+                {
+                    "platform": "template",
+                    "sensors": {
+                        "garage": {
+                            "value_template": "{{ states('binary_sensor.from_package') }}",
+                        }
+                    },
+                }
+            ],
+            "frontend": {
+                "themes": {
+                    "night": {"card-mod": "binary_sensor.from_theme"},
+                },
+                "extra_module_url": ["/local/binary_sensor.from_frontend"],
+            },
+            "homeassistant": {
+                "packages": {
+                    "already_merged": {
+                        "sensor": [
+                            {
+                                "platform": "template",
+                                "sensors": {
+                                    "dup": {
+                                        "value_template": "{{ states('sensor.only_inside_packages_key') }}",
+                                    }
+                                },
+                            }
+                        ]
+                    }
+                }
+            },
+        }
+        self.hass = MagicMock()
+
+        with patch.object(
+            yaml_config,
+            "async_load_core_config",
+            AsyncMock(return_value=LoadedCoreConfig(merged_config, True)),
+        ):
+            hits = await yaml_config.async_scan(
+                self.hass,
+                {
+                    "sensor.from_automations_yaml",
+                    "binary_sensor.from_package",
+                    "binary_sensor.from_theme",
+                    "binary_sensor.from_frontend",
+                    "sensor.only_inside_packages_key",
+                },
+            )
+
+        self.assertNotIn("sensor.from_automations_yaml", hits)
+        self.assertNotIn("sensor.only_inside_packages_key", hits)
+        self.assertEqual(
+            hits["binary_sensor.from_package"][0].label,
+            "configuration.yaml (binary_sensor)",
+        )
+        self.assertEqual(
+            hits["binary_sensor.from_theme"][0].label,
+            "configuration.yaml (themes)",
+        )
+        self.assertNotIn("binary_sensor.from_frontend", hits)
+        self.assertFalse(hits["binary_sensor.from_package"][0].auto_replaceable)
+
+    async def test_file_fallback_scans_packages_when_merge_fails(self) -> None:
+        """If yaml merge is gone, package files should still be scanned."""
+        import tempfile
+        from homeassistant.exceptions import HomeAssistantError
+
+        async def _boom(_hass: object) -> dict:
+            raise HomeAssistantError("merge unavailable")
+
+        self.hass = MagicMock()
+        temp = Path(tempfile.mkdtemp())
+        packages = temp / "packages"
+        packages.mkdir(exist_ok=True)
+        (packages / "garage.yaml").write_text("placeholder: 1\n", encoding="utf-8")
+        (temp / "configuration.yaml").write_text("placeholder: 1\n", encoding="utf-8")
+        self.hass.config.path = lambda rel="": str(temp / rel if rel else temp)
+
+        async def _run_job(func, *args):
+            return func(*args)
+
+        self.hass.async_add_executor_job = _run_job
+
+        def _load(path: str):
+            path_s = str(path)
+            if path_s.endswith("configuration.yaml"):
+                return {
+                    "binary_sensor": [
+                        {
+                            "value_template": "{{ states('binary_sensor.from_file') }}"
+                        }
+                    ]
+                }
+            if path_s.endswith("garage.yaml"):
+                return {
+                    "sensor": [
+                        {
+                            "value_template": "{{ states('sensor.from_package_file') }}"
+                        }
+                    ]
+                }
+            return {}
+
+        try:
+            with (
+                patch(
+                    "homeassistant.config.async_hass_config_yaml",
+                    _boom,
+                ),
+                patch.object(yaml_config, "_load_yaml_file", _load),
+            ):
+                hits = await yaml_config.async_scan(
+                    self.hass,
+                    {"binary_sensor.from_file", "sensor.from_package_file"},
+                )
+        finally:
+            (packages / "garage.yaml").unlink()
+            (temp / "configuration.yaml").unlink()
+            packages.rmdir()
+            temp.rmdir()
+
+        self.assertIn("binary_sensor.from_file", hits)
+        self.assertIn("sensor.from_package_file", hits)
+        self.assertFalse(hits["binary_sensor.from_file"][0].auto_replaceable)
+        self.assertFalse(hits["sensor.from_package_file"][0].auto_replaceable)
 
 
 if __name__ == "__main__":

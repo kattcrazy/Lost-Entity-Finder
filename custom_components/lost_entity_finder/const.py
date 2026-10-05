@@ -22,64 +22,18 @@ TRANSLATION_KEY_FOUND = "found_entity_references"
 ISSUE_KIND_FIND = "find"
 
 RESCAN_COMPONENT_DOMAINS = frozenset(
-    {"automation", "script", "scene", "lovelace", "group"}
+    {"automation", "script", "scene", "lovelace"}
 )
-REGISTRY_RESCAN_DOMAINS = frozenset({"script", "group"})
+REGISTRY_RESCAN_DOMAINS = frozenset({"automation", "script", "scene"})
+
+# Documented UI yaml files. Do not import private config-editor path constants.
+UI_CONFIG_PATHS = {
+    "automation": "automations.yaml",
+    "script": "scripts.yaml",
+    "scene": "scenes.yaml",
+}
 
 ENTITY_AUTO_REPLACE_ALL = "auto_replace_all"
 ENTITY_IGNORE_ALL = "ignore_all"
 ENTITY_RESTORE_IGNORED = "restore_ignored"
 ENTITY_RESCAN = "rescan"
-
-# .storage scanning (read-only, third-party / uncaptured configs)
-STORAGE_MAX_FILE_BYTES = 2 * 1024 * 1024
-
-STORAGE_SKIP_EXACT: frozenset[str] = frozenset(
-    {
-        STORAGE_KEY_PENDING,
-        STORAGE_KEY_IGNORED,
-        # Legacy storage keys from pre-rename domain
-        "entity_finder.pending_id_changes",
-        "entity_finder.ignored",
-        "lost_entity_find_and_replace.pending_id_changes",
-        "lost_entity_find_and_replace.ignored",
-        "auth",
-        "auth_provider.homeassistant",
-        "core.analytics",
-        "core.area_registry",
-        "core.category_registry",
-        "core.config",
-        "core.config_entries",
-        "core.device_registry",
-        "core.entity_registry",
-        "core.floor_registry",
-        "core.label_registry",
-        "core.logger",
-        "core.network",
-        "core.restore_state",
-        "core.uuid",
-        "frontend.user_data",
-        "hass.storage",
-        "homeassistant.exposed_entities",
-        "http",
-        "http.auth",
-        "lovelace",
-        "lovelace_dashboards",
-        "lovelace_resources",
-        "repairs.issue_registry",
-        "trace.saved_traces",
-        # Covered by dedicated scanners
-        "automation.storage",
-        "script.storage",
-        "scene.storage",
-    }
-)
-
-STORAGE_SKIP_PREFIXES: tuple[str, ...] = (
-    "auth.",
-    "core.",
-    "lovelace.",
-    "input_",
-    "person.",
-    "recorder.",
-)

@@ -1,14 +1,15 @@
 {
   "domain": "lost_entity_finder",
   "name": "Lost Entity Finder",
-  "after_dependencies": ["automation", "config", "group", "lovelace", "script"],
+  "after_dependencies": ["automation", "config", "lovelace", "scene", "script"],
   "codeowners": ["@kattcrazy"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/kattcrazy/Lost-Entity-Finder",
   "integration_type": "service",
+  "single_config_entry": true,
   "iot_class": "calculated",
   "issue_tracker": "https://github.com/kattcrazy/Lost-Entity-Finder/issues",
   "requirements": [],
-  "version": "1.6.34"
+  "version": "2.0.0"
 }

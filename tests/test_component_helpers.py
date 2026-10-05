@@ -5,42 +5,52 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bootstrap  # noqa: F401
 
-from lost_entity_finder.scanners.component_helpers import is_auto_replaceable_component_entity
+from lost_entity_finder.ui_config import (
+    is_auto_replaceable_ui_item,
+)
 
 
 class ComponentHelperTests(unittest.TestCase):
-    """Tests for auto-replace eligibility on component entities."""
+    """Tests for auto-replace eligibility on UI yaml items."""
 
-    def test_unique_id_without_raw_config_is_auto_replaceable(self) -> None:
-        """UI-created entities should be auto-replaceable when they have an id."""
-        entity = MagicMock()
-        entity.unique_id = "morning_routine"
-        entity.raw_config = None
-        entity.referenced_blueprint = None
+    def test_item_with_id_is_auto_replaceable(self) -> None:
+        """UI-created items should be auto-replaceable when they have an id."""
+        item = {"id": "morning_routine", "alias": "Morning"}
+        self.assertTrue(
+            is_auto_replaceable_ui_item("morning_routine", item, {"morning_routine"})
+        )
 
-        self.assertTrue(is_auto_replaceable_component_entity(entity))
+    def test_blueprint_items_are_not_auto_replaceable(self) -> None:
+        """Blueprint-backed items must stay manual."""
+        item = {
+            "id": "morning_routine",
+            "use_blueprint": {"path": "author/blueprint.yaml"},
+        }
+        self.assertFalse(
+            is_auto_replaceable_ui_item("morning_routine", item, {"morning_routine"})
+        )
 
-    def test_blueprint_entities_are_not_auto_replaceable(self) -> None:
-        """Blueprint-backed entities must stay manual."""
-        entity = MagicMock()
-        entity.unique_id = "morning_routine"
-        entity.raw_config = {"id": "morning_routine"}
-        entity.referenced_blueprint = {"path": "author/blueprint.yaml"}
+    def test_items_without_id_are_not_auto_replaceable(self) -> None:
+        """Items without a stable id cannot be updated in the UI yaml file."""
+        item = {"alias": "Temporary"}
+        self.assertFalse(is_auto_replaceable_ui_item(None, item, set()))
 
-        self.assertFalse(is_auto_replaceable_component_entity(entity))
+    def test_unread_ui_file_is_not_auto_replaceable(self) -> None:
+        """A missing UI id list must not treat package items as writable."""
+        item = {"id": "morning_routine", "alias": "Morning"}
+        self.assertFalse(is_auto_replaceable_ui_item("morning_routine", item, None))
 
-    def test_entities_without_unique_id_are_not_auto_replaceable(self) -> None:
-        """Entities without a stable id cannot be updated via the config editor."""
-        entity = MagicMock()
-        entity.unique_id = None
-        entity.raw_config = {"alias": "Temporary"}
-
-        self.assertFalse(is_auto_replaceable_component_entity(entity))
+    def test_ui_file_membership_controls_auto_replace(self) -> None:
+        """Only ids present in the UI yaml file are auto-replaceable."""
+        item = {"id": "morning_routine", "alias": "Morning"}
+        self.assertTrue(
+            is_auto_replaceable_ui_item("morning_routine", item, {"morning_routine"})
+        )
+        self.assertFalse(is_auto_replaceable_ui_item("morning_routine", item, set()))
 
 
 if __name__ == "__main__":

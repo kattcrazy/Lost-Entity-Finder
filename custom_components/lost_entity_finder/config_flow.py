@@ -83,9 +83,6 @@ class EntityFinderOptionsFlow(config_entries.OptionsFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Manage Lost Entity Finder options."""
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
         current_bulk_fix = self.config_entry.data.get(
             CONF_ENABLE_BULK_FIX, DEFAULT_ENABLE_BULK_FIX
         )
@@ -98,6 +95,30 @@ class EntityFinderOptionsFlow(config_entries.OptionsFlow):
             )
             current_max_pending = self.config_entry.options.get(
                 CONF_MAX_PENDING_CHANGES, current_max_pending
+            )
+
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            from .entry_helpers import get_loaded_manager
+
+            manager = get_loaded_manager(self.hass)
+            turning_off_bulk = (
+                not bool(user_input.get(CONF_ENABLE_BULK_FIX, True))
+                and bool(current_bulk_fix)
+            )
+            if (
+                manager is not None
+                and manager.is_auto_replace_all_running
+                and turning_off_bulk
+            ):
+                errors[CONF_ENABLE_BULK_FIX] = "bulk_fix_running"
+            else:
+                return self.async_create_entry(title="", data=user_input)
+            current_bulk_fix = bool(
+                user_input.get(CONF_ENABLE_BULK_FIX, current_bulk_fix)
+            )
+            current_max_pending = int(
+                user_input.get(CONF_MAX_PENDING_CHANGES, current_max_pending)
             )
 
         return self.async_show_form(
@@ -116,6 +137,7 @@ class EntityFinderOptionsFlow(config_entries.OptionsFlow):
                     ),
                 }
             ),
+            errors=errors,
         )
 
 

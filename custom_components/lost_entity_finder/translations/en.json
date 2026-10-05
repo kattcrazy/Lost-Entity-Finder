@@ -23,6 +23,65 @@
           "max_pending_changes": "Maximum tracked entity ID changes"
         }
       }
+    },
+    "error": {
+      "bulk_fix_running": "Auto-Replace All is still running. Wait for it to finish before turning Auto-Replace off."
+    }
+  },
+  "entity": {
+    "button": {
+      "rescan": {
+        "name": "Rescan for Lost Entity Repairs"
+      },
+      "ignore_all": {
+        "name": "Ignore All Lost Entity Repairs"
+      },
+      "restore_ignored": {
+        "name": "Restore Ignored Lost Entity Repairs"
+      },
+      "auto_replace_all": {
+        "name": "Auto-Replace All Lost Entity Repairs"
+      }
+    }
+  },
+  "services": {
+    "find_entity_references": {
+      "name": "Find Entity References",
+      "description": "Scan supported locations and raise a repair where an entity ID is referenced.",
+      "fields": {
+        "entity_id": {
+          "name": "Entity ID",
+          "description": "The entity ID to search for (for example sensor.kitchen_temp)."
+        }
+      }
+    },
+    "check_entity_id_pair": {
+      "name": "Check Entity ID Pair",
+      "description": "Check one or more old-to-new entity ID pairs and make repairs for them.",
+      "fields": {
+        "renames": {
+          "name": "Renames",
+          "description": "Mapping of old entity IDs to new entity IDs. Use one entry for a single pair, or many for bulk renames."
+        },
+        "create_repair_without_references": {
+          "name": "Create Repair Without References",
+          "description": "When enabled, create a repair even if no references to the old entity ID are found."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "no_references_found": {
+      "message": "No references found for '{entity_id}' in supported locations."
+    },
+    "renames_required": {
+      "message": "Renames must be a non-empty old-to-new entity ID map."
+    },
+    "not_loaded": {
+      "message": "Lost Entity Finder is not loaded."
+    },
+    "check_entity_id_pair_failed": {
+      "message": "check_entity_id_pair failed: {error}"
     }
   },
   "issues": {
@@ -54,11 +113,10 @@
           "preview": {
             "title": "Preview Auto-Replace",
             "description": "The following locations will be updated from `{old_entity_id}` to `{new_entity_id}`:\n\n{preview}\n\nConfirm to apply these changes."
-          },
-          "result": {
-            "title": "Auto-Replace complete",
-            "description": "{result_summary}"
           }
+        },
+        "abort": {
+          "fix_later": "The repair stays open so you can fix it later."
         }
       }
     },

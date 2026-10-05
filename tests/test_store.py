@@ -23,7 +23,7 @@ class EntityFinderStoreTests(unittest.IsolatedAsyncioTestCase):
         self.store = EntityFinderStore.__new__(EntityFinderStore)
         self.store.hass = MagicMock()
         self.store._pending = {}
-        self.store._ignored = set()
+        self.store._ignored = {}
         self.store._max_pending_changes = DEFAULT_MAX_PENDING_CHANGES
         self.store._pending_store = MagicMock()
         self.store._pending_store.async_save = AsyncMock()
@@ -51,6 +51,39 @@ class EntityFinderStoreTests(unittest.IsolatedAsyncioTestCase):
         pending = self.store.get_pending_changes()
         self.assertEqual(pending["sensor.a"].new_entity_id, "sensor.c")
         self.assertEqual(pending["sensor.b"].new_entity_id, "sensor.c")
+
+    async def test_chain_collapse_when_later_step_is_stored_first(self) -> None:
+        """{B: C, A: B} must point A at C, not leave it on B."""
+        await self.store.async_record_entity_id_change("sensor.b", "sensor.c")
+        await self.store.async_record_entity_id_change("sensor.a", "sensor.b")
+
+        pending = self.store.get_pending_changes()
+        self.assertEqual(pending["sensor.a"].new_entity_id, "sensor.c")
+        self.assertEqual(pending["sensor.b"].new_entity_id, "sensor.c")
+
+    async def test_rename_cycle_is_dropped(self) -> None:
+        """A->B then B->A has no stable final id, so both rows are removed."""
+        await self.store.async_record_entity_id_change("sensor.a", "sensor.b")
+        await self.store.async_record_entity_id_change("sensor.b", "sensor.a")
+
+        pending = self.store.get_pending_changes()
+        self.assertNotIn("sensor.a", pending)
+        self.assertNotIn("sensor.b", pending)
+
+    async def test_ignore_cap_keeps_the_id_just_ignored(self) -> None:
+        """The ignore cap drops the oldest id, not the one just ignored."""
+        from lost_entity_finder.const import MAX_IGNORED
+
+        for index in range(MAX_IGNORED):
+            entity_id = f"sensor.zzz_{index:02d}"
+            self.store._ignored[entity_id] = f"2020-01-01T00:00:{index:02d}+00:00"
+
+        await self.store.async_ignore("sensor.aaa")
+
+        ignored = self.store.get_ignored_entity_ids()
+        self.assertIn("sensor.aaa", ignored)
+        self.assertEqual(len(ignored), MAX_IGNORED)
+        self.assertNotIn("sensor.zzz_00", ignored)
 
     async def test_pending_cap_drops_oldest(self) -> None:
         """Pending changes should stay under the configured cap."""
@@ -141,6 +174,62 @@ class EntityFinderStoreTests(unittest.IsolatedAsyncioTestCase):
 
         pending = self.store.get_pending_changes()
         self.assertEqual(pending["sensor.old"].new_entity_id, "sensor.new")
+
+    async def test_record_normalizes_entity_id_case(self) -> None:
+        """Registry and service paths must share one lowercase key."""
+        await self.store.async_record_entity_id_change(
+            "Sensor.Old", "Sensor.New", unique_id="abc"
+        )
+        pending = self.store.get_pending_changes()
+        self.assertIn("sensor.old", pending)
+        self.assertEqual(pending["sensor.old"].new_entity_id, "sensor.new")
+
+    async def test_keep_without_references_clears_on_later_record(self) -> None:
+        """Re-import without the flag must drop sticky nothing-found behavior."""
+        await self.store.async_record_entity_id_change(
+            "sensor.old",
+            "sensor.new",
+            keep_without_references=True,
+        )
+        await self.store.async_record_entity_id_change(
+            "sensor.old",
+            "sensor.newer",
+            keep_without_references=False,
+        )
+        pending = self.store.get_pending_changes()
+        self.assertFalse(pending["sensor.old"].keep_without_references)
+
+    async def test_record_many_saves_once(self) -> None:
+        """Bulk import should persist pending changes with one write."""
+        imported = await self.store.async_record_entity_id_changes(
+            [
+                ("sensor.a", "sensor.a2", None),
+                ("sensor.b", "sensor.b2", "uid-b"),
+            ]
+        )
+        self.assertEqual(imported, 2)
+        self.assertEqual(self.store._pending_store.async_save.await_count, 1)
+        pending = self.store.get_pending_changes()
+        self.assertEqual(pending["sensor.a"].new_entity_id, "sensor.a2")
+        self.assertEqual(pending["sensor.b"].unique_id, "uid-b")
+
+    async def test_ignore_many_saves_once(self) -> None:
+        """Bulk ignore should persist ignored ids with one write."""
+        await self.store.async_ignore_many(["sensor.a", "sensor.b"])
+        self.assertEqual(self.store._ignored_store.async_save.await_count, 1)
+        ignored = self.store.get_ignored_entity_ids()
+        self.assertEqual(ignored, {"sensor.a", "sensor.b"})
+
+    def test_parse_entity_id_change_normalizes_case(self) -> None:
+        """Registry events should store lowercase ids."""
+        parsed = EntityFinderStore.parse_entity_id_change(
+            {
+                "action": "update",
+                "entity_id": "Sensor.Kitchen",
+                "old_entity_id": "Sensor.Old_Kitchen",
+            }
+        )
+        self.assertEqual(parsed, ("sensor.old_kitchen", "sensor.kitchen"))
 
 
 if __name__ == "__main__":
