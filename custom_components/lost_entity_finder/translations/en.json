@@ -122,7 +122,6 @@
     },
     "found_entity_references": {
       "title": "References to {entity_id}",
-      "description": "Found in:\n\n{references}\n\n{manual_note}",
       "fix_flow": {
         "step": {
           "find_references": {
